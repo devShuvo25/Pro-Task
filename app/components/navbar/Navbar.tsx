@@ -1,131 +1,126 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Search, Bell, CalendarDays, Menu, LayoutGrid, AlertCircle, CheckSquare, List, Settings, HelpCircle, LogOut, User } from "lucide-react"
+import { Search, Bell, Calendar } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
-import { usePathname } from "next/navigation"
+const Navbar = () => {
+  const pathname = usePathname();
+  const [currentDate, setCurrentDate] = useState({ day: "", fullDate: "" });
+  const navRef = useRef(null);
 
-export function Navbar() {
-  const pathname = usePathname()
-  const customDate = new Date()
-  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-  const dayName = days[customDate.getDay()]
-  const dateString = customDate.toLocaleDateString("en-GB") // DD/MM/YYYY
+  useEffect(() => {
+    const date = new Date();
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const dayName = days[date.getDay()];
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const fullDateStr = `${day}/${month}/${year}`;
 
-  const links = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
-    { href: "/dashboard/vital-tasks", label: "Vital Tasks", icon: AlertCircle },
-    { href: "/dashboard/my-tasks", label: "My Tasks", icon: CheckSquare },
-    { href: "/dashboard/categories", label: "Task Categories", icon: List },
-    { href: "/dashboard/settings", label: "Settings", icon: Settings },
-    { href: "/help", label: "Help", icon: HelpCircle },
-  ]
+    setCurrentDate({ day: dayName, fullDate: fullDateStr });
+  }, []);
+
+  useGSAP(() => {
+    gsap.from(navRef.current, {
+      y: -20,
+      opacity: 0,
+      duration: 0.8,
+      ease: "power3.out",
+    });
+  }, { scope: navRef });
+
+  const navLinks = [
+    { label: "Dashboard", href: "/" },
+    { label: "Vital Tasks", href: "/dashboard/vital-tasks" },
+    { label: "My Tasks", href: "/dashboard/my-tasks" },
+    { label: "Category", href: "/dashboard/categories" },
+  ];
 
   return (
-    <header className="bg-white/80 backdrop-blur-md px-6 py-4 border-b border-gray-100">
-      <div className="flex items-center justify-between">
-        {/* Left Section: Logo */}
-        <div className="flex items-center gap-4">
-            {/* Logo */}
-            <Link href="/" className="text-2xl font-bold flex-shrink-0">
-            <span className="text-[#FF5F5F]">Dash</span>board
-            </Link>
+    <nav 
+      ref={navRef}
+      className="w-full bg-white/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-gray-100 z-50 transition-all duration-300"
+    >
+      {/* Left: Brand */}
+      <Link href="/" className="flex items-center group">
+        <div className="text-[26px] font-bold tracking-tight">
+          <span className="text-[#FF6B6B] group-hover:text-[#ff5252] transition-colors">Dash</span>
+          <span className="text-[#1A1A1A]">board</span>
         </div>
+      </Link>
 
+      {/* Center: Search & Nav Links */}
+      <div className="flex items-center gap-12 flex-1 max-w-4xl mx-8">
+        {/* Navigation Links */}
+        <ul className="hidden xl:flex items-center gap-8">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <li key={link.href}>
+                <Link 
+                  href={link.href}
+                  className={`relative text-sm font-semibold transition-all duration-300 py-1 ${
+                    isActive ? "text-[#FF6B6B]" : "text-gray-500 hover:text-[#1A1A1A]"
+                  }`}
+                >
+                  {link.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#FF6B6B] rounded-full" />
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
 
-        {/* Right Section */}
-        <div className="flex items-center gap-4 sm:gap-8">
-            {/* Desktop Navigation Links (Visible on MD+) */}
-            <nav className="hidden md:flex items-center gap-1">
-                {links.map((link) => {
-                    const isActive = pathname === link.href;
-                    return (
-                        <Link 
-                            key={link.href}
-                            href={link.href}
-                            className={`px-3 py-2 rounded-full text-sm font-medium transition-all ${
-                                isActive 
-                                    ? "bg-[#FF5F5F]/10 text-[#FF5F5F]" 
-                                    : "text-gray-600 hover:text-[#FF5F5F] hover:bg-gray-50"
-                            }`}
-                        >
-                            {link.label}
-                        </Link>
-                    )
-                })}
-            </nav>
-
-             {/* Search Bar */}
-             <div className="relative hidden lg:block w-[350px]">
-                <input
-                    type="text"
-                    placeholder="Search your task here..."
-                    className="w-full rounded-xl bg-gray-50 px-4 py-2.5 pr-12 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-[#FF5F5F]/20 transition-all border border-gray-100"
-                />
-                <button className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-lg bg-[#FF5F5F] p-2 text-white shadow-sm transition-all hover:bg-[#FF5F5F]/90 hover:shadow-md active:scale-95">
-                    <Search className="h-4 w-4" />
-                </button>
-            </div>
-
-          <div className="flex items-center gap-3">
-            <button className="hidden sm:flex rounded-xl bg-gray-50 border border-gray-100 p-2.5 text-gray-600 transition hover:bg-[#FF5F5F] hover:text-white hover:border-[#FF5F5F] shadow-sm">
-              <Bell className="h-5 w-5" />
-            </button>
-            <button className="hidden sm:flex rounded-xl bg-gray-50 border border-gray-100 p-2.5 text-gray-600 transition hover:bg-[#FF5F5F] hover:text-white hover:border-[#FF5F5F] shadow-sm">
-              <CalendarDays className="h-5 w-5" />
+        {/* Search Bar */}
+        <div className="flex-1 max-w-md hidden md:block">
+          <div className="flex items-center bg-[#F5F6FA] rounded-[14px] p-1 border border-transparent focus-within:border-[#FF6B6B]/20 focus-within:bg-white transition-all shadow-sm">
+            <input
+              type="text"
+              placeholder="Search your task here..."
+              className="w-full px-4 text-sm font-medium text-gray-700 bg-transparent focus:outline-none placeholder-gray-400 py-2"
+            />
+            <button className="bg-[#FF6B6B] min-w-[36px] h-[36px] rounded-[10px] flex items-center justify-center hover:bg-[#ff5252] transition-colors shadow-md shadow-red-200/50">
+              <Search className="w-4 h-4 text-white stroke-[2.5px]" />
             </button>
           </div>
-
-          <div className="hidden lg:block text-right">
-            <div className="text-sm font-bold text-gray-900">{dayName}</div>
-            <div className="text-xs font-semibold text-[#FF5F5F]">{dateString}</div>
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger className="outline-none">
-              <Avatar className="h-10 w-10 border-2 border-white shadow-md ring-2 ring-gray-50 cursor-pointer transition-transform hover:scale-105">
-                <AvatarFallback className="bg-gray-900 text-white text-sm font-bold">SM</AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 p-2">
-                <div className="flex items-center gap-3 p-2 mb-2 border-b pb-3">
-                    <Avatar className="h-10 w-10">
-                        <AvatarFallback className="bg-gray-100 text-gray-600 font-bold">SM</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <p className="text-sm font-bold text-gray-900">Shuvo Mallik</p>
-                        <p className="text-xs text-gray-500">Admin</p>
-                    </div>
-                </div>
-              <DropdownMenuItem className="cursor-pointer rounded-lg">
-                <Link href="/profile" className="flex items-center gap-2 w-full">
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer rounded-lg">
-                <Link href="/dashboard/settings" className="flex items-center gap-2 w-full">
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600 cursor-pointer rounded-lg focus:text-red-700 focus:bg-red-50">
-                <div className="flex items-center gap-2 w-full">
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
-    </header>
-  )
-}
+
+      {/* Right: Actions & Date */}
+      <div className="flex items-center gap-4">
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          <button className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center hover:bg-gray-50 transition-all group border border-transparent hover:border-gray-100">
+            <Bell className="w-5 h-5 text-gray-500 group-hover:text-[#FF6B6B] transition-colors" />
+          </button>
+          <button className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center hover:bg-gray-50 transition-all group border border-transparent hover:border-gray-100">
+            <Calendar className="w-5 h-5 text-gray-500 group-hover:text-[#FF6B6B] transition-colors" />
+          </button>
+        </div>
+
+        {/* Date Display */}
+        <div className="hidden sm:flex flex-col items-end leading-tight pl-4 border-l border-gray-100">
+          <span className="font-bold text-[#1A1A1A] text-[14px]">{currentDate.day}</span>
+          <span className="font-bold text-[#4FACFE] text-[11px] tracking-wider uppercase">{currentDate.fullDate}</span>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;

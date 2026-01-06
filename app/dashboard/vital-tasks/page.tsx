@@ -2,11 +2,14 @@
 
 import { TaskCard } from "@/app/components/taskCard/TaskCard"
 import { Plus, Filter, SortAsc, Search, ListFilter, AlertTriangle } from "lucide-react"
-import { motion } from "framer-motion"
-import { useState } from "react"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
+import { useState, useRef } from "react"
+import { cn } from "@/lib/utils"
 
 export default function VitalTasks() {
   const [searchQuery, setSearchQuery] = useState("")
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const tasks = [
     {
@@ -52,115 +55,115 @@ export default function VitalTasks() {
     task.description.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
-    }
-  }
-
-  const item = {
-    hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0 }
-  }
+  useGSAP(() => {
+    gsap.from(".anim-stagger", {
+      y: 20,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.05,
+      ease: "power3.out"
+    })
+  }, { scope: containerRef });
 
   return (
-    <div className="flex-1 min-h-screen bg-white">
-      <div className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+    <div ref={containerRef} className="max-w-[1600px] mx-auto space-y-12">
+      {/* Header Section */}
+      <div className="anim-stagger flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div>
+          <div className="flex items-center gap-2 mb-3 text-[#FF6B6B]">
+            <AlertTriangle className="h-6 w-6 stroke-[2.5px]" />
+            <span className="text-xs font-black tracking-[0.2em] uppercase">Urgent & Critical</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-[#1A1A1A]">
+            Vital <span className="text-[#FF6B6B]">Tasks</span>
+          </h1>
+          <p className="mt-4 text-lg text-gray-500 font-medium">Focus on high-priority items that require immediate attention.</p>
+        </div>
         
-        {/* Header & Stats Ribbon */}
-        <div className="flex flex-col gap-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                     <div className="flex items-center gap-2 mb-1 text-red-600">
-                        <AlertTriangle className="h-5 w-5" />
-                        <span className="text-sm font-bold tracking-wider uppercase">Urgent & Critical</span>
-                    </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">Vital Tasks</h1>
-                    <p className="text-gray-500 mt-1">Focus on high-priority items that require immediate attention.</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 shadow-sm">
-                        <Plus className="h-4 w-4" />
-                        <span>Add Critical Task</span>
-                    </button>
-                </div>
-            </div>
+        <div className="flex items-center gap-3">
+          <button className="flex items-center gap-3 bg-[#1A1A1A] text-white px-8 py-4 rounded-[18px] font-bold hover:bg-[#FF6B6B] transition-all shadow-xl shadow-gray-200 hover:shadow-red-200/50 active:scale-95 group">
+            <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
+            Add Critical Task
+          </button>
+        </div>
+      </div>
 
-            {/* Simple Stats Row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-red-100/50 rounded-lg overflow-hidden border border-red-200/60">
-                {[
-                    { label: "High Priority", value: tasks.length },
-                    { label: "Due Today", value: "2", active: true },
-                    { label: "Overdue", value: "0" },
-                    { label: "Needs Review", value: "1" },
-                ].map((stat) => (
-                    <div key={stat.label} className={`bg-white px-6 py-4 ${stat.active ? 'bg-red-50/30' : ''}`}>
-                        <p className={`text-sm font-medium ${stat.active ? 'text-red-600' : 'text-gray-500'}`}>{stat.label}</p>
-                        <p className={`text-2xl font-semibold mt-1 ${stat.active ? 'text-red-700' : 'text-gray-900'}`}>{stat.value}</p>
-                    </div>
-                ))}
-            </div>
+      {/* Stats Ribbon */}
+      <div className="anim-stagger grid grid-cols-2 md:grid-cols-4 gap-6">
+        {[
+          { label: "High Priority", value: tasks.length, active: true },
+          { label: "Due Today", value: "2", color: "text-red-500" },
+          { label: "Overdue", value: "0", color: "text-gray-400" },
+          { label: "Needs Review", value: "1", color: "text-orange-500" },
+        ].map((stat) => (
+          <div key={stat.label} className={cn(
+            "p-6 rounded-[24px] border transition-all duration-300",
+            stat.active ? "bg-white border-[#FF6B6B]/20 shadow-md shadow-red-50/50" : "bg-white border-gray-100 shadow-sm"
+          )}>
+            <p className={cn(
+              "text-[10px] font-black uppercase tracking-widest",
+              stat.active ? "text-[#FF6B6B]" : "text-gray-400"
+            )}>{stat.label}</p>
+            <p className={cn(
+              "text-3xl font-black mt-2 tracking-tight",
+              stat.active ? "text-[#1A1A1A]" : stat.color || "text-[#1A1A1A]"
+            )}>{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Toolbar */}
+      <div className="anim-stagger flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-gray-100 pb-8">
+        <div className="flex items-center bg-gray-100/50 p-1.5 rounded-2xl">
+          {["All Vital", "Due Soon", "Overdue"].map((tab, i) => (
+            <button 
+              key={tab}
+              className={cn(
+                "px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
+                i === 0 
+                ? 'bg-white text-[#1A1A1A] shadow-md' 
+                : 'text-gray-400 hover:text-[#1A1A1A]'
+              )}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
 
-        {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-gray-100 pb-6">
-            <div className="flex items-center bg-gray-100/50 rounded-lg p-1">
-                {["All Vital", "Due Soon", "Overdue"].map((tab, i) => (
-                    <button 
-                        key={tab}
-                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                            i === 0 
-                            ? 'bg-white text-gray-900 shadow-sm' 
-                            : 'text-gray-500 hover:text-gray-900'
-                        }`}
-                    >
-                        {tab}
-                    </button>
-                ))}
-            </div>
-
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-                <div className="relative flex-1 sm:w-80">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input 
-                        type="text" 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search vital tasks..." 
-                        className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition-all"
-                    />
-                </div>
-                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-gray-700 hover:bg-gray-50 transition-colors">
-                    <SortAsc className="h-4 w-4" />
-                </button>
-            </div>
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gray-400" />
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search critical tasks..." 
+              className="h-14 w-full rounded-2xl border border-gray-100 bg-white pl-12 pr-6 text-sm font-semibold text-[#1A1A1A] placeholder:text-gray-400 focus:border-[#FF6B6B]/20 focus:outline-none focus:ring-4 focus:ring-[#FF6B6B]/5 transition-all shadow-sm"
+            />
+          </div>
+          <button className="h-14 w-14 flex items-center justify-center rounded-2xl border border-gray-100 bg-white text-gray-400 hover:text-[#1A1A1A] hover:bg-gray-50 transition-all shadow-sm">
+            <SortAsc className="h-5 w-5" />
+          </button>
         </div>
+      </div>
 
-        {/* Task Grid */}
-        <motion.div 
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-        >
-            {filteredTasks.length > 0 ? (
-                filteredTasks.map((task, index) => (
-                <motion.div variants={item} key={index}>
-                    <TaskCard task={task} />
-                </motion.div>
-                ))
-            ) : (
-                <div className="col-span-full py-16 text-center border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50">
-                    <Search className="mx-auto h-8 w-8 text-gray-400" />
-                    <h3 className="mt-4 text-sm font-semibold text-gray-900">No vital tasks found</h3>
-                    <p className="mt-1 text-sm text-gray-500">You're all caught up on high priority items.</p>
-                </div>
-            )}
-        </motion.div>
+      {/* Task Grid */}
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {filteredTasks.length > 0 ? (
+          filteredTasks.map((task, index) => (
+            <div key={index} className="anim-stagger">
+              <TaskCard task={task as any} />
+            </div>
+          ))
+        ) : (
+          <div className="col-span-full py-20 text-center border-2 border-dashed border-gray-100 rounded-[32px] bg-white/50">
+            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Search className="h-8 w-8 text-gray-300" />
+            </div>
+            <h3 className="text-xl font-black text-[#1A1A1A]">No critical tasks found</h3>
+            <p className="mt-2 text-gray-500 font-medium">You're all caught up on urgent items.</p>
+          </div>
+        )}
       </div>
     </div>
   )

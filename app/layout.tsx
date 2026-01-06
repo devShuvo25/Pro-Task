@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "./components/navbar/Navbar";
-import { Sidebar } from "./components/sidebar/Sidebar";
 import { Footer } from "@/components/ui/Footer";
+import Navbar from "./components/navbar/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,27 +27,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gray-50/50`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-[#F8F9FD] text-[#1A1A1A]`}
       >
-        {/* Fixed Sidebar */}
-        <aside className="fixed top-0 left-0 z-30 h-screen w-72 hidden md:block border-r bg-white shadow-sm">
-           <Sidebar />
-        </aside>
-
-        {/* Main Content Wrapper - Pushed right by sidebar width */}
-        <div className="md:ml-72 min-h-screen flex flex-col">
-          
+        <div className="min-h-screen flex flex-col">
           {/* Sticky Navbar */}
-          <header className="sticky top-0 z-20 w-full bg-white/80 backdrop-blur-xl border-b border-gray-200/50">
+          <header className="sticky top-0 z-50">
              <Navbar/>
           </header>
 
-          {/* Scrollable Page Content */}
-          <main className="flex-1 p-6 md:p-8 space-y-8">
+          {/* Page Content */}
+          <main className="flex-1 p-6 md:p-12 lg:p-16">
              {children}
           </main>
           
-          <div className="p-6 md:p-8 pt-0">
+          <div className="px-6 md:px-12 lg:px-16 pb-12">
             <Footer />
           </div>
         </div>

@@ -1,7 +1,7 @@
 "use client"
 
-import { Calendar, Tag, MoreHorizontal } from "lucide-react"
-import { motion } from "framer-motion"
+import { Calendar, Tag, MoreHorizontal, CheckCircle2, Clock, AlertCircle } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface TaskProps {
   title: string
@@ -14,29 +14,42 @@ interface TaskProps {
 }
 
 export function TaskCard({ task }: { task: TaskProps }) {
-  const getPriorityColor = (priority: string) => {
+  const getPriorityStyles = (priority: string) => {
     switch (priority.toLowerCase()) {
       case "high":
-        return "bg-red-50 text-red-600 ring-red-500/10"
+        return "bg-red-50 text-red-600 border-red-100"
       case "medium":
-        return "bg-orange-50 text-orange-600 ring-orange-500/10"
+        return "bg-orange-50 text-orange-600 border-orange-100"
       case "low":
-        return "bg-blue-50 text-blue-600 ring-blue-500/10"
+        return "bg-blue-50 text-blue-600 border-blue-100"
       default:
-        return "bg-gray-50 text-gray-600 ring-gray-500/10"
+        return "bg-gray-50 text-gray-600 border-gray-100"
     }
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case "completed":
-        return "bg-emerald-50 text-emerald-600 ring-emerald-500/20"
+        return <CheckCircle2 className="h-4 w-4" />
       case "in progress":
-        return "bg-purple-50 text-purple-600 ring-purple-500/20"
+        return <Clock className="h-4 w-4" />
       case "todo":
-        return "bg-gray-50 text-gray-600 ring-gray-500/20"
+        return <AlertCircle className="h-4 w-4" />
       default:
-        return "bg-gray-50 text-gray-600 ring-gray-500/20"
+        return null
+    }
+  }
+
+  const getStatusStyles = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "completed":
+        return "text-emerald-600 bg-emerald-50/50"
+      case "in progress":
+        return "text-indigo-600 bg-indigo-50/50"
+      case "todo":
+        return "text-slate-600 bg-slate-50/50"
+      default:
+        return "text-gray-600 bg-gray-50/50"
     }
   }
 
@@ -49,61 +62,60 @@ export function TaskCard({ task }: { task: TaskProps }) {
   }
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, scale: 1.01 }}
-      className="group relative flex flex-col justify-between rounded-3xl bg-white p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.1)] border border-gray-100/50"
-    >
-      <div className="absolute left-0 top-6 bottom-6 w-1 bg-transparent transition-colors group-hover:bg-[#FF5F5F] rounded-r-full"></div>
+    <div className={cn(
+      "group relative flex flex-col justify-between rounded-[28px] bg-white p-7 transition-all duration-300",
+      "border border-gray-100/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:-translate-y-1.5"
+    )}>
+      {/* Accent Line on Hover */}
+      <div className="absolute left-0 top-10 bottom-10 w-[3px] bg-transparent group-hover:bg-[#FF6B6B] transition-colors rounded-r-full" />
       
       <div>
-        <div className="mb-5 flex items-center justify-between">
-          <span
-            className={`rounded-full px-3 py-1 text-[11px] font-bold tracking-wider uppercase ring-1 ${getPriorityColor(
-              task.priority
-            )}`}
-          >
+        <div className="mb-6 flex items-center justify-between">
+          <div className={cn(
+            "rounded-full px-3.5 py-1.5 text-[10px] font-black uppercase tracking-widest border",
+            getPriorityStyles(task.priority)
+          )}>
             {task.priority}
-          </span>
-          <button className="text-gray-300 opacity-0 transition-all hover:text-gray-600 hover:bg-gray-50 p-1.5 rounded-lg group-hover:opacity-100">
-            <MoreHorizontal className="h-4 w-4" />
+          </div>
+          <button className="text-gray-300 hover:text-[#1A1A1A] hover:bg-gray-50 p-2 rounded-xl transition-all">
+            <MoreHorizontal className="h-5 w-5" />
           </button>
         </div>
 
-        <h3 className="mb-2 text-xl font-bold text-gray-900 line-clamp-1 group-hover:text-[#FF5F5F] transition-colors">
+        <h3 className="mb-3 text-xl font-black text-[#1A1A1A] leading-tight line-clamp-1 group-hover:text-[#FF6B6B] transition-colors">
           {task.title}
         </h3>
-        <p className="mb-6 text-sm text-gray-500 line-clamp-2 leading-relaxed font-medium">{task.description}</p>
+        <p className="mb-7 text-[14px] text-gray-500 line-clamp-2 leading-relaxed font-medium opacity-80 group-hover:opacity-100 transition-opacity">
+          {task.description}
+        </p>
 
-        <div className="mb-6 flex flex-wrap gap-2">
+        <div className="mb-8 flex flex-wrap gap-2">
           {task.tags.map((tag) => (
             <span
               key={tag}
-              className="flex items-center gap-1 rounded-lg bg-gray-50 px-2.5 py-1 text-xs font-semibold text-gray-600 border border-gray-100"
+              className="flex items-center gap-1.5 rounded-xl bg-[#F8F9FD] px-3 py-1.5 text-[11px] font-bold text-gray-500 border border-gray-100/50 group-hover:border-gray-200 transition-colors"
             >
-              <Tag className="h-3 w-3 text-gray-400" />
+              <Tag className="h-3 w-3 text-gray-400 group-hover:text-[#FF6B6B] transition-colors" />
               {tag}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-gray-50 pt-4 mt-auto">
-        <div className="flex items-center gap-2 text-sm font-medium text-gray-400 group-hover:text-gray-600 transition-colors">
-          <Calendar className="h-4 w-4" />
+      <div className="flex items-center justify-between border-t border-gray-50 pt-5 mt-auto">
+        <div className="flex items-center gap-2.5 text-sm font-bold text-gray-400 group-hover:text-[#1A1A1A] transition-colors">
+          <Calendar className="h-4.5 w-4.5 text-gray-300 group-hover:text-[#4FACFE] transition-colors" />
           <span>{formatDate(task.dueDate)}</span>
         </div>
         
-        <span
-          className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ring-1 ${getStatusColor(
-            task.status
-          )}`}
-        >
-          <div className="h-1.5 w-1.5 rounded-full bg-current" />
-          {task.status}
-        </span>
+        <div className={cn(
+          "flex items-center gap-2 rounded-xl px-3.5 py-2 text-[11px] font-black transition-all",
+          getStatusStyles(task.status)
+        )}>
+          {getStatusIcon(task.status)}
+          <span className="uppercase tracking-wider">{task.status}</span>
+        </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

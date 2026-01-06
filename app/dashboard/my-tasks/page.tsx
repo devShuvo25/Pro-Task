@@ -2,11 +2,14 @@
 
 import { TaskCard } from "@/app/components/taskCard/TaskCard"
 import { Plus, Filter, SortAsc, Search, ListFilter } from "lucide-react"
-import { motion } from "framer-motion"
-import { useState } from "react"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
+import { useState, useRef } from "react"
+import { cn } from "@/lib/utils"
 
 export default function MyTasks() {
   const [searchQuery, setSearchQuery] = useState("")
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const tasks = [
     {
@@ -63,24 +66,6 @@ export default function MyTasks() {
       tags: ["Docs", "Guide"],
       dueDate: "2024-03-30",
     },
-    {
-      title: "Email Notifications",
-      description: "Set up email notifications for task assignments and due date reminders.",
-      status: "Completed",
-      priority: "Medium",
-      category: "Backend",
-      tags: ["Email", "Notifications"],
-      dueDate: "2024-03-10",
-    },
-    {
-      title: "Accessibility Audit",
-      description: "Run an accessibility audit using Lighthouse and fix reported contrast issues.",
-      status: "Todo",
-      priority: "Low",
-      category: "Design",
-      tags: ["A11y", "Audit"],
-      dueDate: "2024-04-05",
-    },
   ]
 
   const filteredTasks = tasks.filter(task => 
@@ -89,115 +74,106 @@ export default function MyTasks() {
     task.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
-    }
-  }
-
-  const item = {
-    hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0 }
-  }
+  useGSAP(() => {
+    gsap.from(".anim-stagger", {
+      y: 20,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.05,
+      ease: "power3.out"
+    })
+  }, { scope: containerRef });
 
   return (
-    <div className="flex-1 min-h-screen bg-white">
-      <div className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+    <div ref={containerRef} className="max-w-[1600px] mx-auto space-y-12">
+      {/* Header Section */}
+      <div className="anim-stagger flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-[#1A1A1A]">
+            My <span className="text-[#FF6B6B]">Tasks</span>
+          </h1>
+          <p className="mt-3 text-lg text-gray-500 font-medium">You have {tasks.length} tasks synced across all devices.</p>
+        </div>
         
-        {/* Header & Stats Ribbon */}
-        <div className="flex flex-col gap-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">My Tasks</h1>
-                    <p className="text-gray-500 mt-1">Manage, organize, and track your project tasks.</p>
-                </div>
-                <div className="flex items-center gap-3">
-                     <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900/10">
-                        <ListFilter className="h-4 w-4" />
-                        <span>View</span>
-                    </button>
-                    <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2">
-                        <Plus className="h-4 w-4" />
-                        <span>Create Task</span>
-                    </button>
-                </div>
-            </div>
+        <div className="flex items-center gap-4">
+          <button className="flex items-center gap-2 bg-white border border-gray-100 px-6 py-4 rounded-[18px] font-bold text-[#1A1A1A] hover:bg-gray-50 transition-all shadow-sm">
+            <ListFilter className="w-5 h-5" />
+            View
+          </button>
+          <button className="flex items-center gap-2 bg-[#FF6B6B] text-white px-8 py-4 rounded-[18px] font-bold hover:bg-[#ff5252] transition-all shadow-xl shadow-red-200/50 active:scale-95 group">
+            <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
+            Create Task
+          </button>
+        </div>
+      </div>
 
-            {/* Simple Stats Row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-gray-200 rounded-lg overflow-hidden border border-gray-200">
-                {[
-                    { label: "Total", value: tasks.length },
-                    { label: "Pending", value: tasks.filter(t => t.status === 'Todo').length },
-                    { label: "In Progress", value: tasks.filter(t => t.status === 'In Progress').length },
-                    { label: "Completed", value: tasks.filter(t => t.status === 'Completed').length },
-                ].map((stat) => (
-                    <div key={stat.label} className="bg-white px-6 py-4">
-                        <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                        <p className="text-2xl font-semibold text-gray-900 mt-1">{stat.value}</p>
-                    </div>
-                ))}
-            </div>
+      {/* Stats Ribbon */}
+      <div className="anim-stagger grid grid-cols-2 md:grid-cols-4 gap-6">
+        {[
+          { label: "Total Tasks", value: tasks.length, color: "text-blue-500" },
+          { label: "Pending", value: tasks.filter(t => t.status === 'Todo').length, color: "text-orange-500" },
+          { label: "In Progress", value: tasks.filter(t => t.status === 'In Progress').length, color: "text-indigo-500" },
+          { label: "Completed", value: tasks.filter(t => t.status === 'Completed').length, color: "text-emerald-500" },
+        ].map((stat) => (
+          <div key={stat.label} className="bg-white p-6 rounded-[24px] border border-gray-100/50 shadow-sm hover:shadow-md transition-all">
+            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
+            <p className={cn("text-3xl font-black mt-2 tracking-tight", stat.color)}>{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Toolbar */}
+      <div className="anim-stagger flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-gray-100 pb-8">
+        <div className="flex items-center bg-gray-100/50 p-1.5 rounded-2xl">
+          {["All Tasks", "Pending", "In Progress", "Completed"].map((tab, i) => (
+            <button 
+              key={tab}
+              className={cn(
+                "px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
+                i === 0 
+                ? 'bg-white text-[#1A1A1A] shadow-md' 
+                : 'text-gray-400 hover:text-[#1A1A1A]'
+              )}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
 
-        {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-gray-100 pb-6">
-            <div className="flex items-center bg-gray-100/50 rounded-lg p-1">
-                {["All", "Pending", "In Progress", "Completed"].map((tab, i) => (
-                    <button 
-                        key={tab}
-                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                            i === 0 
-                            ? 'bg-white text-gray-900 shadow-sm' 
-                            : 'text-gray-500 hover:text-gray-900'
-                        }`}
-                    >
-                        {tab}
-                    </button>
-                ))}
-            </div>
-
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-                <div className="relative flex-1 sm:w-80">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input 
-                        type="text" 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search tasks..." 
-                        className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-500 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 transition-all"
-                    />
-                </div>
-                <button className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-gray-700 hover:bg-gray-50 transition-colors">
-                    <SortAsc className="h-4 w-4" />
-                </button>
-            </div>
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gray-400" />
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Filter by title, tags..." 
+              className="h-14 w-full rounded-2xl border border-gray-100 bg-white pl-12 pr-6 text-sm font-semibold text-[#1A1A1A] placeholder:text-gray-400 focus:border-[#FF6B6B]/20 focus:outline-none focus:ring-4 focus:ring-[#FF6B6B]/5 transition-all shadow-sm"
+            />
+          </div>
+          <button className="h-14 w-14 flex items-center justify-center rounded-2xl border border-gray-100 bg-white text-gray-400 hover:text-[#1A1A1A] hover:bg-gray-50 transition-all shadow-sm">
+            <SortAsc className="h-5 w-5" />
+          </button>
         </div>
+      </div>
 
-        {/* Task Grid */}
-        <motion.div 
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-        >
-            {filteredTasks.length > 0 ? (
-                filteredTasks.map((task, index) => (
-                <motion.div variants={item} key={index}>
-                    <TaskCard task={task} />
-                </motion.div>
-                ))
-            ) : (
-                <div className="col-span-full py-16 text-center border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50">
-                    <Search className="mx-auto h-8 w-8 text-gray-400" />
-                    <h3 className="mt-4 text-sm font-semibold text-gray-900">No tasks found</h3>
-                    <p className="mt-1 text-sm text-gray-500">No tasks match your search query.</p>
-                </div>
-            )}
-        </motion.div>
+      {/* Task Grid */}
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {filteredTasks.length > 0 ? (
+          filteredTasks.map((task, index) => (
+            <div key={index} className="anim-stagger">
+              <TaskCard task={task as any} />
+            </div>
+          ))
+        ) : (
+          <div className="col-span-full py-20 text-center border-2 border-dashed border-gray-100 rounded-[32px] bg-white/50">
+            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Search className="h-8 w-8 text-gray-300" />
+            </div>
+            <h3 className="text-xl font-black text-[#1A1A1A]">No tasks matched your search</h3>
+            <p className="mt-2 text-gray-500 font-medium">Try adjusting your filters or search terms.</p>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -3,8 +3,13 @@
 import { StatsCard } from "@/app/components/StatsCard/StatsCard"
 import { TaskCard } from "@/app/components/taskCard/TaskCard"
 import { Activity, CheckCircle2, Clock, AlertTriangle } from "lucide-react"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
+import { useRef } from "react"
 
 export default function Dashboard() {
+  const containerRef = useRef<HTMLDivElement>(null)
+
   const stats = [
     {
       label: "Total Tasks",
@@ -28,7 +33,7 @@ export default function Dashboard() {
       label: "Vital Tasks",
       count: 5,
       icon: AlertTriangle,
-      color: "text-[#FF5F5F]",
+      color: "text-[#FF6B6B]",
     },
   ]
 
@@ -62,28 +67,42 @@ export default function Dashboard() {
     },
   ]
 
+  useGSAP(() => {
+    gsap.from(".anim-item", {
+      y: 30,
+      opacity: 0,
+      duration: 0.8,
+      stagger: 0.1,
+      ease: "power3.out",
+    })
+  }, { scope: containerRef });
+
   return (
-    <div className="space-y-8">
-        <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
-            <p className="mt-2 text-lg text-gray-500">Welcome back, here's an overview of your projects.</p>
-        </div>
+    <div ref={containerRef} className="space-y-12">
+      <div className="anim-item">
+        <h1 className="text-4xl font-black tracking-tight text-[#1A1A1A]">Dashboard Overview</h1>
+        <p className="mt-3 text-lg text-gray-500 font-medium">Welcome back! Here's a snapshot of your current performance.</p>
+      </div>
 
       {/* Stats Grid */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <StatsCard key={stat.label} {...stat} />
+          <div key={stat.label} className="anim-item">
+            <StatsCard {...stat} />
+          </div>
         ))}
       </div>
 
       {/* Recent Tasks */}
-      <div>
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Recent Tasks</h2>
+      <div className="space-y-8">
+        <div className="anim-item flex items-center justify-between border-b border-gray-100 pb-5">
+          <h2 className="text-3xl font-black tracking-tight text-[#1A1A1A]">Recent Progress</h2>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
           {recentTasks.map((task, index) => (
-            <TaskCard key={index} task={task} />
+            <div key={index} className="anim-item">
+              <TaskCard task={task as any} />
+            </div>
           ))}
         </div>
       </div>
